@@ -2,7 +2,7 @@
 
 Facter.add(:phpversion) do
   setcode do
-    output = Facter::Util::Resolution.exec('php -v')
+    output = Facter::Core::Execution.execute('php -v')
 
     unless output.nil?
       output.split("\n").first.split
