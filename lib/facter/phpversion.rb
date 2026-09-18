@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 Facter.add(:phpversion) do
+  confine { Facter::Core::Execution.which('php') }
+
   setcode do
-    output = Facter::Core::Execution.execute('php -v', on_fail: nil)
+    output = Facter::Core::Execution.execute('php -v')
 
     unless output.nil?
       output.split("\n").first.split

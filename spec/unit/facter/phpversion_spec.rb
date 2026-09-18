@@ -14,7 +14,8 @@ describe 'phpversion fact' do
 
   context 'when php is installed' do
     before do
-      allow(Facter::Core::Execution).to receive(:execute).with('php -v', any_args).and_return(
+      allow(Facter::Core::Execution).to receive(:which).with('php').and_return('/usr/bin/php')
+      allow(Facter::Core::Execution).to receive(:execute).with('php -v').and_return(
         "PHP 8.2.7 (cli) (built: Jun  8 2023 20:03:25) (NTS)\n" \
         "Copyright (c) The PHP Group\n" \
         "Zend Engine v4.2.7, Copyright (c) Zend Technologies\n",
@@ -24,20 +25,15 @@ describe 'phpversion fact' do
     it { is_expected.to eq '8.2.7' }
   end
 
-  context 'when php is not installed' do
+  context 'when php is not in the path' do
     before do
-      allow(Facter).to receive(:log_exception).and_call_original
-      allow(Facter::Core::Execution).to receive(:execute).with('php -v', any_args) do |_command, options = {}|
-        on_fail = options.fetch(:on_fail, :raise)
-        raise Facter::Core::Execution::ExecutionFailure, "Could not execute 'php -v': command not found" if on_fail == :raise
-
-        on_fail
-      end
+      allow(Facter::Core::Execution).to receive(:which).with('php').and_return(nil)
+      allow(Facter::Core::Execution).to receive(:execute)
     end
 
-    it 'resolves to nil without logging an exception' do
+    it 'resolves to nil without running php' do
       expect(fact).to be_nil
-      expect(Facter).not_to have_received(:log_exception)
+      expect(Facter::Core::Execution).not_to have_received(:execute)
     end
   end
 end
