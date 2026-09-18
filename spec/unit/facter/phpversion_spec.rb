@@ -23,4 +23,22 @@ describe 'phpversion', type: :fact do
     expect(Facter.fact(:phpversion).value).to be_nil
     expect(Facter::Core::Execution).not_to have_received(:execute)
   end
+
+  it 'is not defined if php produces no output' do
+    allow(Facter).to receive(:log_exception).and_call_original
+    allow(Facter::Core::Execution).to receive(:which).with('php').and_return('/usr/bin/php')
+    allow(Facter::Core::Execution).to receive(:execute).with('php -v').and_return('')
+    expect(Facter.fact(:phpversion).value).to be_nil
+    expect(Facter).not_to have_received(:log_exception)
+  end
+
+  it 'logs if php is installed but cannot be run' do
+    allow(Facter).to receive(:log_exception).and_call_original
+    allow(Facter::Core::Execution).to receive(:which).with('php').and_return('/usr/bin/php')
+    allow(Facter::Core::Execution).to receive(:execute).with('php -v').and_raise(
+      Facter::Core::Execution::ExecutionFailure, "Could not execute 'php -v': Permission denied"
+    )
+    expect(Facter.fact(:phpversion).value).to be_nil
+    expect(Facter).to have_received(:log_exception)
+  end
 end

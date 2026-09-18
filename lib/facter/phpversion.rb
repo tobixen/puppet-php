@@ -6,9 +6,7 @@ Facter.add(:phpversion) do
   setcode do
     output = Facter::Core::Execution.execute('php -v')
 
-    unless output.nil?
-      output.split("\n").first.split
-            .grep(%r{^(?:(\d+)\.)(?:(\d+)\.)?(\*|\d+)}).first
-    end
+    output.split("\n").first.to_s.split
+          .grep(%r{^(?:(\d+)\.)(?:(\d+)\.)?(\*|\d+)}).first
   end
 end
